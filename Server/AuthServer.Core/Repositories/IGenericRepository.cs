@@ -4,7 +4,7 @@ namespace AuthServer.Core.Repositories;
 
 public interface IGenericRepository<TEntity> where TEntity : class
 {
-    Task<TEntity> AddAsync(TEntity entity);
+    Task AddAsync(TEntity entity);
     TEntity Update(TEntity entity);
     void Remove(TEntity entity);
 
