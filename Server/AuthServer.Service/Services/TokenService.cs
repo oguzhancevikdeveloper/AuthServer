@@ -31,7 +31,6 @@ public class TokenService : ITokenService
         SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
         JwtSecurityToken jwtSecurityToken = new(
-
             issuer:_customTokenOption.Issuer,
             expires: accessTokenExpiration,
             notBefore:DateTime.Now,

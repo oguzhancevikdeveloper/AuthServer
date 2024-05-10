@@ -3,7 +3,7 @@ using System.Linq.Expressions;
 
 namespace AuthServer.Core.Services;
 
-public interface IServiceGeneric<TEntity, TDto> where TEntity : class where TDto : class
+public interface IGenericService<TEntity, TDto> where TEntity : class where TDto : class
 {
     Task<Response<TDto>> AddAsync(TDto dto);
     Task<Response<NoDataDto>> Update(TDto dto,int id);
