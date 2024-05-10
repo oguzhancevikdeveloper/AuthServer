@@ -52,6 +52,19 @@ namespace AuthServer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "UserRefreshTokens",
+                columns: table => new
+                {
+                    UserAppId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    RefreshToken = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
+                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_UserRefreshTokens", x => x.UserAppId);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetRoleClaims",
                 columns: table => new
                 {
@@ -157,26 +170,6 @@ namespace AuthServer.Data.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "UserRefreshTokens",
-                columns: table => new
-                {
-                    UserAppId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    RefreshToken = table.Column<string>(type: "nvarchar(200)", maxLength: 200, nullable: false),
-                    ExpirationDate = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    UserAppId1 = table.Column<string>(type: "nvarchar(450)", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_UserRefreshTokens", x => x.UserAppId);
-                    table.ForeignKey(
-                        name: "FK_UserRefreshTokens_AspNetUsers_UserAppId1",
-                        column: x => x.UserAppId1,
-                        principalTable: "AspNetUsers",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -215,11 +208,6 @@ namespace AuthServer.Data.Migrations
                 column: "NormalizedUserName",
                 unique: true,
                 filter: "[NormalizedUserName] IS NOT NULL");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_UserRefreshTokens_UserAppId1",
-                table: "UserRefreshTokens",
-                column: "UserAppId1");
         }
 
         /// <inheritdoc />

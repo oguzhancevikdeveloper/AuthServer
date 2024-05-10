@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240510081052_init")]
+    [Migration("20240510135629_init")]
     partial class init
     {
         /// <inheritdoc />
@@ -107,13 +107,7 @@ namespace AuthServer.Data.Migrations
                         .HasMaxLength(200)
                         .HasColumnType("nvarchar(200)");
 
-                    b.Property<string>("UserAppId1")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
                     b.HasKey("UserAppId");
-
-                    b.HasIndex("UserAppId1");
 
                     b.ToTable("UserRefreshTokens");
                 });
@@ -249,17 +243,6 @@ namespace AuthServer.Data.Migrations
                     b.HasKey("UserId", "LoginProvider", "Name");
 
                     b.ToTable("AspNetUserTokens", (string)null);
-                });
-
-            modelBuilder.Entity("AuthServer.Core.Models.UserRefreshToken", b =>
-                {
-                    b.HasOne("AuthServer.Core.Models.UserApp", "UserApp")
-                        .WithMany()
-                        .HasForeignKey("UserAppId1")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("UserApp");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

@@ -43,7 +43,6 @@ public class AuthenticationService : IAuthenticationService
         if (userRefreshToken == null) await _userRefreshTokenRepository.AddAsync(new UserRefreshToken
         {
             UserAppId = user.Id,
-            UserApp = user,
             RefreshToken = token.RefreshToken,
             ExpirationDate = token.RefreshTokenExpirationDate
         });
@@ -60,6 +59,7 @@ public class AuthenticationService : IAuthenticationService
 
     public Response<ClientTokenDto> CreateTokenByClient(ClientLoginDto clientLoginDto)
     {
+
         var client = _clients.SingleOrDefault(x => x.Id.Equals(clientLoginDto.ClientId) && x.Secret.Equals(clientLoginDto.ClientSecret));
 
         if (client == null) return Response<ClientTokenDto>.Fail("ClientId or ClientSecret not found", 404, true);
