@@ -21,6 +21,7 @@ public class UserController : CustomBaseController
     {
         return ActionResultInstance(await _userService.CreateUserAsync(createUserDto));
     }
+
     [Authorize]
     [HttpGet]
     public async Task<IActionResult> GetUser()

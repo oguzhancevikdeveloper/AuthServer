@@ -1,4 +1,4 @@
-using AuthServer.Core.Configuration;
+﻿using AuthServer.Core.Configuration;
 using AuthServer.Core.Models;
 using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
@@ -72,33 +72,62 @@ builder.Services.AddScoped(typeof(IGenericService<,>),typeof(GenericService<,>))
 builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
 
 
-builder.Services.AddControllers().AddFluentValidation(options =>
+builder?.Services?.AddControllers()?.AddFluentValidation(optipons =>
 {
-    options.RegisterValidatorsFromAssemblyContaining<Program>();
+    optipons.RegisterValidatorsFromAssemblyContaining<Program>();
 });
 
-builder.Services.UseCustomValidationResponse();
+builder?.Services.UseCustomValidationResponse();
 
-builder.Services.AddSwaggerGen(c =>
+
+
+builder?.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "UdemyAuthServer.API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthServer.API", Version = "v1" });
+    OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
+    {
+        Name = "Authorization",
+        BearerFormat = "JWT",
+        Scheme = "Bearer",
+        Description = "Specify the authorization token",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+    };
+    c.AddSecurityDefinition("Bearer", securityDefinition);
+
+    OpenApiSecurityRequirement securityRequirement = new OpenApiSecurityRequirement();
+    OpenApiSecurityScheme secondSecurityDefinition = new OpenApiSecurityScheme
+    {
+        Reference = new OpenApiReference
+        {
+            Type = ReferenceType.SecurityScheme,
+            Id = "Bearer"
+        }
+    };
+    securityRequirement.Add(secondSecurityDefinition, new string[] { });
+    c.AddSecurityRequirement(securityRequirement);
+
 });
+
+
 var app = builder.Build();
 
+app.UseCustomException();
 
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UdemyAuthServer.API v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "AuthServer.API v1"));
 }
-app.UseCustomException();
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
+app.UseAuthentication(); 
 app.UseAuthorization();
-app.UseAuthentication();
+
 app.MapControllers();
 
 app.Run();
+
+
