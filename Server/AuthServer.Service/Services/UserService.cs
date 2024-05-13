@@ -30,9 +30,9 @@ public class UserService : IUserService
         return Response<UserAppDto>.Success(ObjectMapper.Mapper.Map<UserAppDto>(user), 200);
     }
 
-    public async Task<Response<UserAppDto>> GetUserByUserNameAsync(string userName)
+    public async Task<Response<UserAppDto>> GetUserAsync(string userId)
     {
-        var user = await _userManager.FindByNameAsync(userName);
+        var user = await _userManager.FindByIdAsync(userId);
 
         if (user == null) return Response<UserAppDto>.Fail("Username not found", 404, true);
 

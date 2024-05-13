@@ -2,6 +2,7 @@
 using AuthServer.Core.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace AuthServer.API.Controllers;
 
@@ -26,7 +27,6 @@ public class UserController : CustomBaseController
     [HttpGet]
     public async Task<IActionResult> GetUser()
     {
-        var t = HttpContext.User.Identity.Name;
-        return ActionResultInstance(await _userService.GetUserByUserNameAsync(HttpContext.User.Identity.Name));
+        return ActionResultInstance(await _userService.GetUserAsync(HttpContext.User.Claims.FirstOrDefault().Value));
     }
 }
