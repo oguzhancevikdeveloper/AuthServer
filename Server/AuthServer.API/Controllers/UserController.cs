@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.API.Controllers;
 
-[Route("api/[controller]/[action]")]
+[Route("api/[controller]")]
 [ApiController]
 public class UserController : CustomBaseController
 {
@@ -23,8 +23,9 @@ public class UserController : CustomBaseController
     }
     [Authorize]
     [HttpGet]
-    public async Task<IActionResult> GetUserByUserName()
+    public async Task<IActionResult> GetUser()
     {
+        var t = HttpContext.User.Identity.Name;
         return ActionResultInstance(await _userService.GetUserByUserNameAsync(HttpContext.User.Identity.Name));
     }
 }

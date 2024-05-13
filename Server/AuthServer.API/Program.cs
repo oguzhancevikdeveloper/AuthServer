@@ -7,9 +7,13 @@ using AuthServer.Data;
 using AuthServer.Data.Repositories;
 using AuthServer.Service.Services;
 using AuthServer.Shared.Configuration;
+using AuthServer.Shared.Services;
+using AuthServer.Shared.Extensions;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -67,16 +71,31 @@ builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository
 builder.Services.AddScoped(typeof(IGenericService<,>),typeof(GenericService<,>));
 builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
 
+
+builder.Services.AddControllers().AddFluentValidation(options =>
+{
+    options.RegisterValidatorsFromAssemblyContaining<Program>();
+});
+
+builder.Services.UseCustomValidationResponse();
+
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "UdemyAuthServer.API", Version = "v1" });
+});
 var app = builder.Build();
 
 
 if (app.Environment.IsDevelopment())
 {
+    app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI();
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "UdemyAuthServer.API v1"));
 }
+app.UseCustomException();
 
 app.UseHttpsRedirection();
+app.UseRouting();
 
 app.UseAuthorization();
 app.UseAuthentication();
