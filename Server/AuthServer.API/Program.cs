@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.OpenApi.Models;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -74,12 +75,19 @@ builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
 
 builder?.Services?.AddControllers()?.AddFluentValidation(optipons =>
 {
-    optipons.RegisterValidatorsFromAssemblyContaining<Program>();
+     optipons.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 });
 
 builder?.Services.UseCustomValidationResponse();
 
 
+builder?.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("AdanaPolicy", policy =>
+    {
+        policy.RequireClaim(claimType:"city",allowedValues:"adana");
+    });
+});
 
 builder?.Services.AddSwaggerGen(c =>
 {
