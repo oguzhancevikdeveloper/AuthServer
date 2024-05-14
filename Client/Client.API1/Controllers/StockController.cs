@@ -13,10 +13,9 @@ public class StockController : ControllerBase
     [HttpGet]
     public IActionResult GetStock()
     {
-        var userName = HttpContext.User.Identity.Name;
 
-        var userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
+        var userEmailClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value;
 
-        return Ok($"Stock işlemleri  =>UserName: {userName}- UserId:{userIdClaim.Value}");
+        return Ok($"Stock işlemleri  =>UserName: {userEmailClaim}");
     }
 }

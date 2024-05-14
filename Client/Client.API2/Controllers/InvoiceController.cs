@@ -12,15 +12,11 @@ public class InvoiceController : ControllerBase
     [HttpGet]
     public IActionResult GetInvoices()
     {
-        var userName = HttpContext.User.Identity.Name;
 
-        var userIdClaim = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
 
-        //veri tabanında  userId veya userName alanları üzerinden gerekli dataları çek
+        var userEmail = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value;
 
-        // stockId stockQuantity  Category  UserId/UserName
-
-        return Ok($"Invoice işlemleri =>  UserName: {userName}- UserId:{userIdClaim.Value}");
+        return Ok($"Invoice işlemleri =>  UserName: {userEmail}");
     }
 }
 

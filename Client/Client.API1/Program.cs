@@ -17,7 +17,7 @@ builder.Services.AddEndpointsApiExplorer();
 
 builder?.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo { Title = "AuthServer.API", Version = "v1" });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "Client.API1", Version = "v1" });
     OpenApiSecurityScheme securityDefinition = new OpenApiSecurityScheme()
     {
         Name = "Authorization",
@@ -53,7 +53,7 @@ if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
     app.UseSwagger();
-    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Client.API v1"));
+    app.UseSwaggerUI(c => c.SwaggerEndpoint("/swagger/v1/swagger.json", "Client.API1 v1"));
 }
 
 app.UseHttpsRedirection();
