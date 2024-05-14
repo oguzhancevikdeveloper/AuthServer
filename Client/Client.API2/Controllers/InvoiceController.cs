@@ -13,10 +13,7 @@ public class InvoiceController : ControllerBase
     public IActionResult GetInvoices()
     {
 
-
-        var userEmail = User.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email).Value;
-
-        return Ok($"Invoice işlemleri =>  UserName: {userEmail}");
+        return Ok($"Secret client çalışıyor.");
     }
 }
 
