@@ -28,4 +28,10 @@ public class UserController : CustomBaseController
     {
         return ActionResultInstance(await _userService.GetUserAsync(HttpContext.User.Claims.FirstOrDefault().Value));
     }
+    [Authorize]
+    [HttpPost("CreateUserRoles")]
+    public async Task<IActionResult> CreateUserRoles(string userId)
+    {
+        return ActionResultInstance(await _userService.CreateUserRole(userId));
+    }
 }

@@ -35,7 +35,7 @@ public class TokenService : ITokenService
             issuer:_customTokenOption.Issuer,
             expires: accessTokenExpiration,
             notBefore:DateTime.Now,
-            claims:GetClaims(userApp,_customTokenOption.Audience),
+            claims:GetClaims(userApp,_customTokenOption.Audience).Result,
             signingCredentials:signingCredentials
             );
 
@@ -87,18 +87,22 @@ public class TokenService : ITokenService
         return Convert.ToBase64String(numberByte);
     }
 
-    private IEnumerable<Claim> GetClaims(UserApp userApp, List<string> audience)
+    private async Task<IEnumerable<Claim>> GetClaims(UserApp userApp, List<string> audience)
     {
+        var userRoles = await _userManager.GetRolesAsync(userApp);
+
         var userList = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier,userApp.Id),
             new Claim(JwtRegisteredClaimNames.Email,userApp.Email),
             new Claim(ClaimTypes.Role,userApp.UserName),
-            new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString())
-
+            new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
+            new Claim("city",userApp.City),
+            new Claim("birth-date",userApp.BirthDate.ToShortDateString())
         };
 
         userList.AddRange(audience.Select(x => new Claim(JwtRegisteredClaimNames.Aud, x)));
+        userList.AddRange(userRoles.Select(x => new Claim(ClaimTypes.Role,x)));
 
         return userList;
 
