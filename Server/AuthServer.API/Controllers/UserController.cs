@@ -16,10 +16,28 @@ public class UserController : CustomBaseController
         _userService = userService;
     }
 
-    [HttpPost]
+    [HttpPost("create-user")]
     public async Task<IActionResult> CreateUser(CreateUserDto createUserDto)
     {
         return ActionResultInstance(await _userService.CreateUserAsync(createUserDto));
+    }
+
+    [HttpPost("forgot-password")]
+    public async Task<IActionResult> ForgotPassword(string email)
+    {
+        return ActionResultInstance(await _userService.GeneratePasswordResetTokenAsync(email));
+    }
+
+    [HttpPost("verify-reset-token")]
+    public async Task<IActionResult> VerifyResetToken(string resetToken, string userId)
+    {
+        return ActionResultInstance(await _userService.VerifyPasswordResetTokenAsync(resetToken, userId));
+    }
+
+    [HttpPost("update-password")]
+    public async Task<IActionResult> UpdatePassword(string userId, string resetToken, string newPassword)
+    {
+        return ActionResultInstance(await _userService.UpdatePasswordAsync(resetToken, userId, newPassword));
     }
 
     [Authorize]
