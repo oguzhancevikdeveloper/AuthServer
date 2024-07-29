@@ -48,7 +48,7 @@ builder.Services.AddAuthentication(opt =>
 {
     opt.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
     opt.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
-}).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme,opt =>
+}).AddJwtBearer(JwtBearerDefaults.AuthenticationScheme, opt =>
 {
     var tokeOptions = builder.Configuration.GetSection("TokenOptions").Get<CustomTokenOption>();
     opt.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters()
@@ -58,7 +58,7 @@ builder.Services.AddAuthentication(opt =>
         IssuerSigningKey = SignService.GetSymmetricSecurityKey(tokeOptions.SecurityKey),
         ValidateIssuerSigningKey = true,
         ValidateAudience = true,
-        ValidateIssuer =true,
+        ValidateIssuer = true,
         ValidateLifetime = true,
         ClockSkew = TimeSpan.Zero
     };
@@ -67,15 +67,16 @@ builder.Services.AddAuthentication(opt =>
 builder.Services.AddScoped<IAuthenticationService, AuthenticationService>();
 builder.Services.AddScoped<IUserService, UserService>();
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IMailService, MailService>();
 
-builder.Services.AddScoped(typeof(IGenericRepository<>),typeof(GenericRepository<>));
-builder.Services.AddScoped(typeof(IGenericService<,>),typeof(GenericService<,>));
-builder.Services.AddScoped<IUnitOfWork,UnitOfWork>();
+builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
+builder.Services.AddScoped(typeof(IGenericService<,>), typeof(GenericService<,>));
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
 
 
 builder?.Services?.AddControllers()?.AddFluentValidation(optipons =>
 {
-     optipons.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
+    optipons.RegisterValidatorsFromAssembly(Assembly.GetExecutingAssembly());
 });
 
 builder?.Services.UseCustomValidationResponse();
@@ -85,7 +86,7 @@ builder?.Services.AddAuthorization(options =>
 {
     options.AddPolicy("AdanaPolicy", policy =>
     {
-        policy.RequireClaim(claimType:"city",allowedValues:"adana");
+        policy.RequireClaim(claimType: "city", allowedValues: "adana");
     });
 });
 
@@ -131,7 +132,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-app.UseAuthentication(); 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
