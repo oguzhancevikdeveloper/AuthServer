@@ -1,6 +1,4 @@
-﻿using AuthServer.Core.Models;
-
-namespace AuthServer.Data.Models;
+﻿namespace AuthServer.Core.Models;
 
 public class AspNetUserPhoneCode
 {

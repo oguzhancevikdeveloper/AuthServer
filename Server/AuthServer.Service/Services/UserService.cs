@@ -3,7 +3,6 @@ using AuthServer.Core.Models;
 using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
 using AuthServer.Core.UnitOfWork;
-using AuthServer.Data.Models;
 using AuthServer.Shared.Dtos;
 using AuthServer.Shared.Helpers;
 using Microsoft.AspNetCore.Http;
