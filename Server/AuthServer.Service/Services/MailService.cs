@@ -14,6 +14,27 @@ public class MailService : IMailService
     {
         _configuration = configuration;
     }
+
+    public async Task SendEmailConfirmationLinkAsync(string to, string userId, string confirmToken)
+    {
+        StringBuilder mail = new();
+        mail.AppendLine("Merhaba,<br><br>");
+        mail.AppendLine("E-posta adresinizi doğrulamak için aşağıdaki linke tıklayınız:<br><br>");
+        mail.AppendLine("<strong><a target=\"_blank\" href=\"");
+        mail.AppendLine(_configuration["AngularClientUrl"]);
+        mail.AppendLine("/confirm-email/");
+        mail.AppendLine(userId);
+        mail.AppendLine("/");
+        mail.AppendLine(confirmToken);
+        mail.AppendLine("\">E-posta adresinizi doğrulamak için buraya tıklayınız...</a></strong><br><br>");
+        mail.AppendLine("<span style=\"font-size:12px;\">NOT: Eğer bu talebi siz yapmadıysanız, bu e-postayı dikkate almayınız.</span><br>");
+        mail.AppendLine("Saygılarımızla,<br>");
+        mail.AppendLine("Şirket");
+
+        await SendMailAsync(to, "E-posta Doğrulama Talebi", mail.ToString());
+    }
+
+
     public async Task SendMailAsync(string to, string subject, string body, bool isBodyHtml = true)
     {
         await SendMailAsync(new[] { to }, subject, body, isBodyHtml);

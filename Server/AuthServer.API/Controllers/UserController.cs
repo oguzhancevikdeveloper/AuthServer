@@ -22,6 +22,24 @@ public class UserController : CustomBaseController
         return ActionResultInstance(await _userService.CreateUserAsync(createUserDto));
     }
 
+    [HttpPost("enable-two-factor-authentication")]
+    public async Task<IActionResult> EnableTwoFactorAuthentication(string userId, string phoneNumber)
+    {
+        return ActionResultInstance(await _userService.EnableTwoFactorAuthentication(phoneNumber,userId));
+    }
+
+    [HttpPost("verify-two-factor")]
+    public async Task<IActionResult> VerifyTwoFactor(string userId, string token, string phoneNumber)
+    {
+        return ActionResultInstance(await _userService.VerifyTwoFactorToken(phoneNumber, token, userId));
+    }
+
+    [HttpPost("verify-confirm-email")]
+    public async Task<IActionResult> VerifyEmailConfirm(string userId, string confirmationToken)
+    {
+        return ActionResultInstance(await _userService.VerifyEmailConfirmTokenAsync(userId,confirmationToken));
+    }
+
     [HttpPost("forgot-password")]
     public async Task<IActionResult> ForgotPassword(string email)
     {
@@ -40,16 +58,23 @@ public class UserController : CustomBaseController
         return ActionResultInstance(await _userService.UpdatePasswordAsync(resetToken, userId, newPassword));
     }
 
-    [Authorize]
+    //[Authorize]
     [HttpGet]
     public async Task<IActionResult> GetUser()
     {
         return ActionResultInstance(await _userService.GetUserAsync(HttpContext.User.Claims.FirstOrDefault().Value));
     }
-    [Authorize]
-    [HttpPost("CreateUserRoles")]
-    public async Task<IActionResult> CreateUserRoles(string userId)
+    //[Authorize]
+    [HttpGet("create-user-roles")]
+    public async Task<IActionResult> CreateUserRoles()
     {
-        return ActionResultInstance(await _userService.CreateUserRole(userId));
+        return ActionResultInstance(await _userService.CreateUserRole());
+    }
+
+    //[Authorize]
+    [HttpPost("assign-rol-to-user")]
+    public async Task<IActionResult> AssignRoleToUser(string userId,string roleId)
+    {
+        return ActionResultInstance(await _userService.AssignRoleToUser(userId, roleId));
     }
 }

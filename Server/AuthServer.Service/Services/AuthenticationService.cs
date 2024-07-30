@@ -4,7 +4,10 @@ using AuthServer.Core.Models;
 using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
 using AuthServer.Core.UnitOfWork;
+using AuthServer.Data.Models;
 using AuthServer.Shared.Dtos;
+using AuthServer.Shared.Helpers;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
@@ -18,14 +21,17 @@ public class AuthenticationService : IAuthenticationService
     private readonly UserManager<UserApp> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<UserRefreshToken> _userRefreshTokenRepository;
+    private readonly IGenericRepository<AspNetUserPhoneCode> _userPhoneRepository;
+    private readonly ITwilioService _twilioService;
 
-    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository)
+    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository, ITwilioService twilioService)
     {
         _clients = optionsClients.Value;
         _tokenService = tokenService;
         _userManager = userManager;
         _unitOfWork = unitOfWork;
         _userRefreshTokenRepository = userRefreshTokenRepository;
+        _twilioService = twilioService;
     }
 
     public async Task<Response<TokenDto>> CreateTokenAsync(LoginDto loginDto)
@@ -36,6 +42,66 @@ public class AuthenticationService : IAuthenticationService
         if (user == null) return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
 
         if (!await _userManager.CheckPasswordAsync(user, loginDto.Password)) return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
+
+
+        if (!user.TwoFactorEnabled)
+        {
+            var _token = _tokenService.CreateToken(user);
+            var _userRefreshToken = await _userRefreshTokenRepository.Where(x => x.UserAppId.Equals(user.Id)).SingleOrDefaultAsync();
+
+            if (_userRefreshToken == null) await _userRefreshTokenRepository.AddAsync(new UserRefreshToken
+            {
+                UserAppId = user.Id,
+                RefreshToken = _token.RefreshToken,
+                ExpirationDate = _token.RefreshTokenExpirationDate
+            });
+            else
+            {
+                _userRefreshToken.RefreshToken = _token.RefreshToken;
+                _userRefreshToken.ExpirationDate = _token.RefreshTokenExpirationDate;
+            }
+
+            await _unitOfWork.CommitAsync();
+
+            return Response<TokenDto>.Success(_token, 200);
+        }
+        var userPhone = await _userPhoneRepository.Where(x => x.UserApp.Id.Equals(user.Id)).FirstOrDefaultAsync();
+
+        if (userPhone == null)
+        {
+            Random random = new Random();
+            string phoneCode = await _userManager.GenerateTwoFactorTokenAsync(user, "Phone");
+            await _userPhoneRepository.AddAsync(new()
+            {
+                UserApp = user,
+                PhoneLoginCode = phoneCode,
+                CreatedDate = DateTime.Now,
+            });
+
+            await _unitOfWork.CommitAsync();
+
+            await _twilioService.SendSmsAsync(user.PhoneNumber, $"Your verification code is {phoneCode}");
+
+            return Response<TokenDto>.Success(new TokenDto
+            {
+                AccessToken = null,
+                AccessTokenExpirationDate = DateTime.Now,
+                RefreshToken = null,
+                RefreshTokenExpirationDate = DateTime.Now
+            }, StatusCodes.Status200OK);
+
+        }
+
+        var userPhoneValidate = await _userPhoneRepository.Where(x => x.PhoneLoginCode.Equals(loginDto.PhoneLoginCode)).FirstOrDefaultAsync();
+
+        if (userPhoneValidate == null) return Response<TokenDto>.Success(new TokenDto
+        {
+            AccessToken = null,
+            AccessTokenExpirationDate = DateTime.Now,
+            RefreshToken = null,
+            RefreshTokenExpirationDate = DateTime.Now
+        }, StatusCodes.Status400BadRequest);
+
 
         var token = _tokenService.CreateToken(user);
         var userRefreshToken = await _userRefreshTokenRepository.Where(x => x.UserAppId.Equals(user.Id)).SingleOrDefaultAsync();
@@ -52,9 +118,15 @@ public class AuthenticationService : IAuthenticationService
             userRefreshToken.ExpirationDate = token.RefreshTokenExpirationDate;
         }
 
+
+        userPhoneValidate.PhoneLoginCode = null;
+        userPhoneValidate.CreatedDate = null;
+
+        _userPhoneRepository.Update(userPhoneValidate);
         await _unitOfWork.CommitAsync();
 
         return Response<TokenDto>.Success(token, 200);
+
     }
 
     public Response<ClientTokenDto> CreateTokenByClient(ClientLoginDto clientLoginDto)

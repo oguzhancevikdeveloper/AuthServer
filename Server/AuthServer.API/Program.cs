@@ -7,8 +7,9 @@ using AuthServer.Data;
 using AuthServer.Data.Repositories;
 using AuthServer.Service.Services;
 using AuthServer.Shared.Configuration;
-using AuthServer.Shared.Services;
 using AuthServer.Shared.Extensions;
+using AuthServer.Shared.Helpers;
+using AuthServer.Shared.Services;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
@@ -41,8 +42,12 @@ builder.Services.AddIdentity<UserApp, IdentityRole>(opt =>
 {
     opt.User.RequireUniqueEmail = true;
     opt.Password.RequireNonAlphanumeric = false;
+    opt.SignIn.RequireConfirmedEmail = true;
 }).AddEntityFrameworkStores<AppDbContext>().AddDefaultTokenProviders();
 
+
+builder.Services.Configure<TwilioOptions>(builder.Configuration.GetSection("Twilio"));
+builder.Services.AddTransient<ITwilioService, TwilioService>();
 
 builder.Services.AddAuthentication(opt =>
 {
