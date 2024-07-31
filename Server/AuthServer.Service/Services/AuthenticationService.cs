@@ -22,7 +22,7 @@ public class AuthenticationService : IAuthenticationService
     private readonly IGenericRepository<AspNetUserPhoneCode> _userPhoneRepository;
     private readonly ITwilioService _twilioService;
 
-    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository, ITwilioService twilioService)
+    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository, IGenericRepository<AspNetUserPhoneCode> userPhoneRepository, ITwilioService twilioService)
     {
         _clients = optionsClients.Value;
         _tokenService = tokenService;
@@ -30,6 +30,7 @@ public class AuthenticationService : IAuthenticationService
         _unitOfWork = unitOfWork;
         _userRefreshTokenRepository = userRefreshTokenRepository;
         _twilioService = twilioService;
+        _userPhoneRepository = userPhoneRepository;
     }
 
     public async Task<Response<TokenDto>> CreateTokenAsync(LoginDto loginDto)
@@ -71,6 +72,7 @@ public class AuthenticationService : IAuthenticationService
             string phoneCode = await _userManager.GenerateTwoFactorTokenAsync(user, "Phone");
             await _userPhoneRepository.AddAsync(new()
             {
+                Id = Guid.NewGuid().ToString(),
                 UserApp = user,
                 PhoneLoginCode = phoneCode,
                 CreatedDate = DateTime.Now,
@@ -78,7 +80,7 @@ public class AuthenticationService : IAuthenticationService
 
             await _unitOfWork.CommitAsync();
 
-            await _twilioService.SendSmsAsync(user.PhoneNumber, $"Your verification code is {phoneCode}");
+            //await _twilioService.SendSmsAsync(user.PhoneNumber, $"Your verification code is {phoneCode}");
 
             return Response<TokenDto>.Success(new TokenDto
             {
@@ -90,9 +92,9 @@ public class AuthenticationService : IAuthenticationService
 
         }
 
-        var userPhoneValidate = await _userPhoneRepository.Where(x => x.PhoneLoginCode.Equals(loginDto.PhoneLoginCode)).FirstOrDefaultAsync();
+        var userPhoneValidate = await _userPhoneRepository.Where(x => x.PhoneLoginCode.Equals(loginDto.PhoneLoginCode) && x.UserApp.Id.Equals(user.Id)).FirstOrDefaultAsync();
 
-        if (userPhoneValidate == null) return Response<TokenDto>.Success(new TokenDto
+        if (userPhoneValidate == null || (DateTime.Now- userPhoneValidate.CreatedDate)> TimeSpan.FromMinutes(30)) return Response<TokenDto>.Success(new TokenDto
         {
             AccessToken = null,
             AccessTokenExpirationDate = DateTime.Now,
@@ -116,11 +118,7 @@ public class AuthenticationService : IAuthenticationService
             userRefreshToken.ExpirationDate = token.RefreshTokenExpirationDate;
         }
 
-
-        userPhoneValidate.PhoneLoginCode = null;
-        userPhoneValidate.CreatedDate = null;
-
-        _userPhoneRepository.Update(userPhoneValidate);
+        _userPhoneRepository.Remove(userPhoneValidate);
         await _unitOfWork.CommitAsync();
 
         return Response<TokenDto>.Success(token, 200);
