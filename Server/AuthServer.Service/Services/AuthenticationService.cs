@@ -64,9 +64,9 @@ public class AuthenticationService : IAuthenticationService
 
             return Response<TokenDto>.Success(_token, 200);
         }
-        var userPhone = await _userPhoneRepository.Where(x => x.UserApp.Id.Equals(user.Id)).FirstOrDefaultAsync();
+        var userPhoneValidate = await _userPhoneRepository.Where(x => x.PhoneLoginCode.Equals(loginDto.PhoneLoginCode) && x.UserApp.Id.Equals(user.Id)).FirstOrDefaultAsync();
 
-        if (userPhone == null)
+        if (userPhoneValidate == null)
         {
             Random random = new Random();
             string phoneCode = await _userManager.GenerateTwoFactorTokenAsync(user, "Phone");
@@ -92,15 +92,17 @@ public class AuthenticationService : IAuthenticationService
 
         }
 
-        var userPhoneValidate = await _userPhoneRepository.Where(x => x.PhoneLoginCode.Equals(loginDto.PhoneLoginCode) && x.UserApp.Id.Equals(user.Id)).FirstOrDefaultAsync();
 
-        if (userPhoneValidate == null || (DateTime.Now- userPhoneValidate.CreatedDate)> TimeSpan.FromMinutes(30)) return Response<TokenDto>.Success(new TokenDto
+        if ((DateTime.Now - userPhoneValidate.CreatedDate) > TimeSpan.FromMinutes(2))
         {
-            AccessToken = null,
-            AccessTokenExpirationDate = DateTime.Now,
-            RefreshToken = null,
-            RefreshTokenExpirationDate = DateTime.Now
-        }, StatusCodes.Status400BadRequest);
+
+            _userPhoneRepository.Remove(userPhoneValidate);
+            _unitOfWork.Commit();
+
+            return Response<TokenDto>.Fail("Phone code has been expired", StatusCodes.Status404NotFound, true);
+        }
+
+
 
 
         var token = _tokenService.CreateToken(user);
