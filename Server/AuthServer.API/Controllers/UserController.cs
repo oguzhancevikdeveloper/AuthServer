@@ -1,6 +1,5 @@
 ﻿using AuthServer.Core.DTOs;
 using AuthServer.Core.Services;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace AuthServer.API.Controllers;
@@ -50,6 +49,17 @@ public class UserController : CustomBaseController
     public async Task<IActionResult> VerifyResetToken(string resetToken, string userId)
     {
         return ActionResultInstance(await _userService.VerifyPasswordResetTokenAsync(resetToken, userId));
+    }
+
+    [HttpPost("lock-user")]
+    public async Task<IActionResult> LockUser(string userId)
+    {
+        return ActionResultInstance(await _userService.LockUser(userId));
+    }
+    [HttpPost("unlock-user")]
+    public async Task<IActionResult> UnLockUser(string userId)
+    {
+        return ActionResultInstance(await _userService.UnlockUser(userId));
     }
 
     [HttpPost("update-password")]

@@ -40,6 +40,9 @@ builder.Services.AddDbContext<AppDbContext>(options =>
 
 builder.Services.AddIdentity<UserApp, IdentityRole>(opt =>
 {
+    opt.Lockout.DefaultLockoutTimeSpan = TimeSpan.FromMinutes(2);
+    opt.Lockout.MaxFailedAccessAttempts = 3;
+    opt.Lockout.AllowedForNewUsers = true;
     opt.User.RequireUniqueEmail = true;
     opt.Password.RequireNonAlphanumeric = false;
     opt.SignIn.RequireConfirmedEmail = true;

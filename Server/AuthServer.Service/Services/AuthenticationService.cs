@@ -38,11 +38,19 @@ public class AuthenticationService : IAuthenticationService
         if (loginDto == null) { throw new ArgumentNullException(nameof(loginDto)); }
 
         var user = await _userManager.FindByEmailAsync(loginDto.Email);
+
+        if (await _userManager.IsLockedOutAsync(user)) return Response<TokenDto>.Fail($"{user.Email} has been locked", 400, true);
+
         if (user == null) return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
 
-        if (!await _userManager.CheckPasswordAsync(user, loginDto.Password)) return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
+        if (!await _userManager.CheckPasswordAsync(user, loginDto.Password))
+        {
 
-
+            await _userManager.AccessFailedAsync(user);
+            return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
+        }
+        
+        
         if (!user.TwoFactorEnabled)
         {
             var _token = _tokenService.CreateToken(user);

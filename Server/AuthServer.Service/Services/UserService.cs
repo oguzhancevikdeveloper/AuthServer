@@ -45,8 +45,7 @@ public class UserService : IUserService
         var user = new UserApp { Email = createUserDto.Email, UserName = createUserDto.UserName, City = createUserDto.City, PhoneNumber = createUserDto.PhoneNumber };
 
         var result = await _userManager.CreateAsync(user, createUserDto.Password);
-
-        if (!result.Succeeded)
+        if (!result.Succeeded || await _userManager.IsLockedOutAsync(user))
         {
             var errors = result.Errors.Select(x => x.Description).ToList();
             return Response<UserAppDto>.Fail(new ErrorDto(errors, true), 400);
@@ -124,6 +123,31 @@ public class UserService : IUserService
         if (user == null) return Response<UserAppDto>.Fail("Username not found", 404, true);
 
         return Response<UserAppDto>.Success(ObjectMapper.Mapper.Map<UserAppDto>(user), 200);
+    }
+
+    public async Task<Response<NoDataDto>> LockUser(string userId)
+    {
+        UserApp? userApp = await _userManager.FindByIdAsync(userId);
+
+        if (userApp == null) return Response<NoDataDto>.Fail("User not a found", StatusCodes.Status404NotFound, false);
+
+        await _userManager.SetLockoutEndDateAsync(userApp, DateTimeOffset.Now.AddMinutes(45));
+
+        return Response<NoDataDto>.Success(StatusCodes.Status200OK);
+    }
+
+    public async Task<Response<NoDataDto>> UnlockUser(string userId)
+    {
+        UserApp? userApp = await _userManager.FindByIdAsync(userId);
+
+        if (userApp == null) return Response<NoDataDto>.Fail("User not a found", StatusCodes.Status404NotFound, false);
+
+        await _userManager.SetLockoutEndDateAsync(userApp, DateTimeOffset.Now);
+
+        await _userManager.UpdateAsync(userApp);
+
+        return Response<NoDataDto>.Success(StatusCodes.Status200OK);
+
     }
 
     public async Task<Response<NoDataDto>> UpdatePasswordAsync(string userId, string resetToken, string newPassword)
