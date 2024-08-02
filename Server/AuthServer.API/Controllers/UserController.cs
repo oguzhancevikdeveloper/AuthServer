@@ -33,7 +33,7 @@ public class UserController : CustomBaseController
         return ActionResultInstance(await _userService.VerifyTwoFactorToken(phoneNumber, token, userId));
     }
 
-    [HttpPost("verify-confirm-email")]
+    [HttpGet("verify-confirm-email")]
     public async Task<IActionResult> VerifyEmailConfirm(string userId, string confirmationToken)
     {
         return ActionResultInstance(await _userService.VerifyEmailConfirmTokenAsync(userId,confirmationToken));
