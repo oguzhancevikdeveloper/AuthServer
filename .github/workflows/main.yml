@@ -27,9 +27,9 @@ jobs:
     - name: Publish
       run: dotnet publish ./Server/AuthServer.API/AuthServer.API.csproj --configuration Release --no-build --output './publish'
 
-     - name: Deployment
-       uses: azure/webapps-deploy@v2
-       with:
-         app-name: my-auth-server
-         publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
-         package: './publish'
+    - name: Deployment
+      uses: azure/webapps-deploy@v2
+      with:
+        app-name: my-auth-server
+        publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}
+        package: './publish'
