@@ -1,0 +1,28 @@
+name: Publish 🎉
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+    - master
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps: 
+    - uses: actions/checkout@v3
+
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '8.0.x'
+
+    - name: Restore
+      run: dotnet restore ./AuthServer.sln
+
+    - name: Build
+      run: dotnet build ./AuthServer.sln --configuration Release
+
+    - name: Publish
+      run: dotnet publish ./Server/AuthServer.API.csproj --configuration Release --no-build --output './publish'
