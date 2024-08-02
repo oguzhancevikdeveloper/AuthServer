@@ -22,6 +22,27 @@ namespace AuthServer.Data.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("AuthServer.Core.Models.AspNetUserPhoneCode", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneLoginCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAppId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserAppId");
+
+                    b.ToTable("AspNetUserPhoneCodes");
+                });
+
             modelBuilder.Entity("AuthServer.Core.Models.UserApp", b =>
                 {
                     b.Property<string>("Id")
@@ -110,27 +131,6 @@ namespace AuthServer.Data.Migrations
                     b.HasKey("UserAppId");
 
                     b.ToTable("UserRefreshTokens");
-                });
-
-            modelBuilder.Entity("AuthServer.Data.Models.AspNetUserPhoneCode", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<DateTime?>("CreatedDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("PhoneLoginCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserAppId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserAppId");
-
-                    b.ToTable("AspNetUserPhoneCodes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -266,7 +266,7 @@ namespace AuthServer.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AuthServer.Data.Models.AspNetUserPhoneCode", b =>
+            modelBuilder.Entity("AuthServer.Core.Models.AspNetUserPhoneCode", b =>
                 {
                     b.HasOne("AuthServer.Core.Models.UserApp", "UserApp")
                         .WithMany()

@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthServer.Data.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20240730115238_user-phone-code-fix")]
-    partial class userphonecodefix
+    [Migration("20240802112059_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,6 +24,27 @@ namespace AuthServer.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
+
+            modelBuilder.Entity("AuthServer.Core.Models.AspNetUserPhoneCode", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<DateTime?>("CreatedDate")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("PhoneLoginCode")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("UserAppId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("UserAppId");
+
+                    b.ToTable("AspNetUserPhoneCodes");
+                });
 
             modelBuilder.Entity("AuthServer.Core.Models.UserApp", b =>
                 {
@@ -113,24 +134,6 @@ namespace AuthServer.Data.Migrations
                     b.HasKey("UserAppId");
 
                     b.ToTable("UserRefreshTokens");
-                });
-
-            modelBuilder.Entity("AuthServer.Data.Models.AspNetUserPhoneCode", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("PhoneLoginCode")
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<string>("UserAppId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserAppId");
-
-                    b.ToTable("AspNetUserPhoneCodes");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -266,7 +269,7 @@ namespace AuthServer.Data.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
-            modelBuilder.Entity("AuthServer.Data.Models.AspNetUserPhoneCode", b =>
+            modelBuilder.Entity("AuthServer.Core.Models.AspNetUserPhoneCode", b =>
                 {
                     b.HasOne("AuthServer.Core.Models.UserApp", "UserApp")
                         .WithMany()

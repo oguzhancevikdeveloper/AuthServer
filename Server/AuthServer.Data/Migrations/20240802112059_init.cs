@@ -128,6 +128,25 @@ namespace AuthServer.Data.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AspNetUserPhoneCodes",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    PhoneLoginCode = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CreatedDate = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    UserAppId = table.Column<string>(type: "nvarchar(450)", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AspNetUserPhoneCodes", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AspNetUserPhoneCodes_AspNetUsers_UserAppId",
+                        column: x => x.UserAppId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id");
+                });
+
+            migrationBuilder.CreateTable(
                 name: "AspNetUserRoles",
                 columns: table => new
                 {
@@ -194,6 +213,11 @@ namespace AuthServer.Data.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_AspNetUserPhoneCodes_UserAppId",
+                table: "AspNetUserPhoneCodes",
+                column: "UserAppId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_AspNetUserRoles_RoleId",
                 table: "AspNetUserRoles",
                 column: "RoleId");
@@ -222,6 +246,9 @@ namespace AuthServer.Data.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserLogins");
+
+            migrationBuilder.DropTable(
+                name: "AspNetUserPhoneCodes");
 
             migrationBuilder.DropTable(
                 name: "AspNetUserRoles");
