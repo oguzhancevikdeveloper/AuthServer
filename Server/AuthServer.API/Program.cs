@@ -23,6 +23,18 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
 
+var enviromentName = builder.Environment.EnvironmentName;
+
+builder.Configuration.AddJsonFile($"appsettings.{enviromentName}.json", optional: true);
+
+
+//builder.Configuration.AddJsonFile("appsettings.Development.json", optional: true)
+//    .AddJsonFile("appsettings.Local.json", optional: true)
+//    .AddJsonFile("appsettings.Development.json", optional: true)
+//    .AddJsonFile("appsettings.Production.json", optional: true)
+//    .AddJsonFile("appsettings.Staging.json", optional: true);
+
+
 builder.Services.Configure<CustomTokenOption>(builder.Configuration.GetSection("TokenOptions"));
 builder.Services.Configure<List<Client>>(builder.Configuration.GetSection("Clients"));
 

@@ -8,6 +8,7 @@ using AuthServer.Shared.Helpers;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Security.Claims;
 
 namespace AuthServer.Service.Services;
 
@@ -224,5 +225,19 @@ public class UserService : IUserService
         return Response<NoDataDto>.Fail("Bad Request", StatusCodes.Status400BadRequest, true);
 
 
+    }
+
+    public async Task<Response<NoDataDto>> AddClaimToUserAsync(string userId, string claimType, string claimValue)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        if (user is null) return Response<NoDataDto>.Fail("User not a found!!", StatusCodes.Status404NotFound, true);
+
+        var claim = new Claim(claimType, claimValue);
+        var result = await _userManager.AddClaimAsync(user, claim);
+
+        if(!result.Succeeded) return Response<NoDataDto>.Fail(new ErrorDto(result.Errors.Select(x => x.Description).ToList(),true),StatusCodes.Status404NotFound);
+
+        return Response<NoDataDto>.Success(StatusCodes.Status200OK);
     }
 }

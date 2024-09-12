@@ -15,8 +15,8 @@ public interface IUserService
     Task<Response<NoDataDto>> GeneratePasswordResetTokenAsync(string email);
     Task<Response<NoDataDto>> VerifyPasswordResetTokenAsync(string resetToken, string userId);
     Task<Response<NoDataDto>> UpdatePasswordAsync(string userId, string resetToken, string newPassword);
-
     Task<Response<NoDataDto>> LockUser(string userId);
     Task<Response<NoDataDto>> UnlockUser(string userId);
+    Task<Response<NoDataDto>> AddClaimToUserAsync(string userId, string claimType, string claimValue);
 
 }

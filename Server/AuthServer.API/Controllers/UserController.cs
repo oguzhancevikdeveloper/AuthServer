@@ -24,7 +24,7 @@ public class UserController : CustomBaseController
     [HttpPost("enable-two-factor-authentication")]
     public async Task<IActionResult> EnableTwoFactorAuthentication(string userId, string phoneNumber)
     {
-        return ActionResultInstance(await _userService.EnableTwoFactorAuthentication(phoneNumber,userId));
+        return ActionResultInstance(await _userService.EnableTwoFactorAuthentication(phoneNumber, userId));
     }
 
     [HttpPost("verify-two-factor")]
@@ -36,7 +36,7 @@ public class UserController : CustomBaseController
     [HttpGet("verify-confirm-email")]
     public async Task<IActionResult> VerifyEmailConfirm(string userId, string confirmationToken)
     {
-        return ActionResultInstance(await _userService.VerifyEmailConfirmTokenAsync(userId,confirmationToken));
+        return ActionResultInstance(await _userService.VerifyEmailConfirmTokenAsync(userId, confirmationToken));
     }
 
     [HttpPost("forgot-password")]
@@ -83,8 +83,14 @@ public class UserController : CustomBaseController
 
     //[Authorize]
     [HttpPost("assign-rol-to-user")]
-    public async Task<IActionResult> AssignRoleToUser(string userId,string roleId)
+    public async Task<IActionResult> AssignRoleToUser(string userId, string roleId)
     {
         return ActionResultInstance(await _userService.AssignRoleToUser(userId, roleId));
+    }
+
+    [HttpPost("add-claim-to-user")]
+    public async Task<IActionResult> AddClaimToUserAsync(string userId, string claimType, string claimValue)
+    {
+        return ActionResultInstance(await _userService.AddClaimToUserAsync(userId: userId, claimType: claimType, claimValue: claimValue));
     }
 }
