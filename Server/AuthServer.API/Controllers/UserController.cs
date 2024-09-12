@@ -93,4 +93,10 @@ public class UserController : CustomBaseController
     {
         return ActionResultInstance(await _userService.AddClaimToUserAsync(userId: userId, claimType: claimType, claimValue: claimValue));
     }
+
+    [HttpPost("add-role-with-claims-to-user")]
+    public async Task<IActionResult> AddRoleWithClaimsToUser(string userId, string roleId, string claimType, List<string> claimValues)
+    {
+        return ActionResultInstance(await _userService.AddRoleWithClaimsToUser(userId, roleId, claimType, claimValues));
+    }
 }

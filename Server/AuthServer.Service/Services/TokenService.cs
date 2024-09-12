@@ -32,11 +32,11 @@ public class TokenService : ITokenService
         SigningCredentials signingCredentials = new(securityKey, SecurityAlgorithms.HmacSha256Signature);
 
         JwtSecurityToken jwtSecurityToken = new(
-            issuer:_customTokenOption.Issuer,
+            issuer: _customTokenOption.Issuer,
             expires: accessTokenExpiration,
-            notBefore:DateTime.Now,
-            claims:GetClaims(userApp,_customTokenOption.Audience).Result,
-            signingCredentials:signingCredentials
+            notBefore: DateTime.Now,
+            claims: GetClaims(userApp, _customTokenOption.Audience).Result,
+            signingCredentials: signingCredentials
             );
 
         var handler = new JwtSecurityTokenHandler();
@@ -90,22 +90,21 @@ public class TokenService : ITokenService
     private async Task<IEnumerable<Claim>> GetClaims(UserApp userApp, List<string> audience)
     {
         var userRoles = await _userManager.GetRolesAsync(userApp);
-
+        var userRoleClaims = await _userManager.GetClaimsAsync(userApp);
         var userList = new List<Claim>
         {
             new Claim(ClaimTypes.NameIdentifier,userApp.Id),
             new Claim(JwtRegisteredClaimNames.Email,userApp.Email),
             new Claim(ClaimTypes.Role,userApp.UserName),
-            new Claim(ClaimTypes.GivenName,userApp.UserName),
             new Claim(JwtRegisteredClaimNames.Jti,Guid.NewGuid().ToString()),
             new Claim("city",userApp.City),
             new Claim("birth-date",userApp.BirthDate.ToShortDateString())
         };
-        
+
 
         userList.AddRange(audience.Select(x => new Claim(JwtRegisteredClaimNames.Aud, x)));
-        userList.AddRange(userRoles.Select(x => new Claim(ClaimTypes.Role,x)));
-
+        userList.AddRange(userRoles.Select(x => new Claim(ClaimTypes.Role, x)));
+        userList.AddRange(userRoleClaims.Select(c => new Claim(c.Type,c.Value)));
         return userList;
 
     }

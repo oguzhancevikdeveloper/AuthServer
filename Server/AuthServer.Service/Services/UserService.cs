@@ -236,8 +236,30 @@ public class UserService : IUserService
         var claim = new Claim(claimType, claimValue);
         var result = await _userManager.AddClaimAsync(user, claim);
 
-        if(!result.Succeeded) return Response<NoDataDto>.Fail(new ErrorDto(result.Errors.Select(x => x.Description).ToList(),true),StatusCodes.Status404NotFound);
+        if (!result.Succeeded) return Response<NoDataDto>.Fail(new ErrorDto(result.Errors.Select(x => x.Description).ToList(), true), StatusCodes.Status404NotFound);
 
+        return Response<NoDataDto>.Success(StatusCodes.Status200OK);
+    }
+
+    public async Task<Response<NoDataDto>> AddRoleWithClaimsToUser(string userId, string roleId, string claimType, List<string> claimValues)
+    {
+        var user = await _userManager.FindByIdAsync(userId);
+
+        var role = await _roleManager.FindByIdAsync(roleId: roleId);
+
+        if (role is null) return Response<NoDataDto>.Fail("User not a role", StatusCodes.Status404NotFound, true);
+
+        var roleClaims = claimValues.Select(claimValue => new Claim(claimType, claimValue)).ToList();
+
+        foreach (var roleClaim in roleClaims)
+        {
+            if (!(await _roleManager.GetClaimsAsync(role)).Any(c => c.Type == roleClaim.Type && c.Value == roleClaim.Value))
+            {
+                var result = await _roleManager.AddClaimAsync(role, roleClaim);
+
+                if (!result.Succeeded) return Response<NoDataDto>.Fail(new ErrorDto(result.Errors.Select(x => x.Description).ToList(), true), StatusCodes.Status404NotFound);
+            }
+        }
         return Response<NoDataDto>.Success(StatusCodes.Status200OK);
     }
 }

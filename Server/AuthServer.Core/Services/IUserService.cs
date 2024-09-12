@@ -18,5 +18,6 @@ public interface IUserService
     Task<Response<NoDataDto>> LockUser(string userId);
     Task<Response<NoDataDto>> UnlockUser(string userId);
     Task<Response<NoDataDto>> AddClaimToUserAsync(string userId, string claimType, string claimValue);
+    Task<Response<NoDataDto>> AddRoleWithClaimsToUser(string userId, string roleId, string claimType, List<string> claimValue);
 
 }
