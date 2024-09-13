@@ -10,4 +10,7 @@ public interface IAuthenticationService
     Task<Response<NoDataDto>> RevokeRefreshToken(string refreshToken);
     Response<ClientTokenDto> CreateTokenByClient(ClientLoginDto clientLoginDto);
 
+    Task<Response<TokenDto>> GoogleLoginAsync(string idToken, int accessToken);
+    Task<Response<TokenDto>> FacebookLoginAsync(string idToken, int accessToken);
+
 }

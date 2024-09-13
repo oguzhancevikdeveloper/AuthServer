@@ -5,9 +5,11 @@ using AuthServer.Core.Repositories;
 using AuthServer.Core.Services;
 using AuthServer.Core.UnitOfWork;
 using AuthServer.Shared.Dtos;
+using Google.Apis.Auth;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 
 namespace AuthServer.Service.Services;
@@ -16,13 +18,14 @@ public class AuthenticationService : IAuthenticationService
 {
     private readonly List<Client> _clients;
     private readonly ITokenService _tokenService;
+    private readonly IConfiguration _configuration;
     private readonly UserManager<UserApp> _userManager;
     private readonly IUnitOfWork _unitOfWork;
     private readonly IGenericRepository<UserRefreshToken> _userRefreshTokenRepository;
     private readonly IGenericRepository<AspNetUserPhoneCode> _userPhoneRepository;
     private readonly ITwilioService _twilioService;
 
-    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository, IGenericRepository<AspNetUserPhoneCode> userPhoneRepository, ITwilioService twilioService)
+    public AuthenticationService(IOptions<List<Client>> optionsClients, ITokenService tokenService, UserManager<UserApp> userManager, IUnitOfWork unitOfWork, IGenericRepository<UserRefreshToken> userRefreshTokenRepository, IGenericRepository<AspNetUserPhoneCode> userPhoneRepository, ITwilioService twilioService, IConfiguration configuration)
     {
         _clients = optionsClients.Value;
         _tokenService = tokenService;
@@ -31,6 +34,7 @@ public class AuthenticationService : IAuthenticationService
         _userRefreshTokenRepository = userRefreshTokenRepository;
         _twilioService = twilioService;
         _userPhoneRepository = userPhoneRepository;
+        _configuration = configuration;
     }
 
     public async Task<Response<TokenDto>> CreateTokenAsync(LoginDto loginDto)
@@ -49,8 +53,8 @@ public class AuthenticationService : IAuthenticationService
             await _userManager.AccessFailedAsync(user);
             return Response<TokenDto>.Fail("Email or Password incorrect", 400, true);
         }
-        
-        
+
+
         if (!user.TwoFactorEnabled)
         {
             var _token = _tokenService.CreateToken(user);
@@ -177,5 +181,56 @@ public class AuthenticationService : IAuthenticationService
         await _unitOfWork.CommitAsync();
 
         return Response<NoDataDto>.Success(200);
+    }
+
+
+
+    public async Task<Response<TokenDto>> GoogleLoginAsync(string idToken, int accessToken)
+    {
+        var settings = new GoogleJsonWebSignature.ValidationSettings()
+        {
+            Audience = new List<string> { _configuration["ExternalLoginSettings:Google:Client_ID"] }
+        };
+        var payload = await GoogleJsonWebSignature.ValidateAsync(idToken, settings);
+        var info = new UserLoginInfo("Google", payload.Subject, "GOOGLE");
+
+        UserApp userApp = await _userManager.FindByLoginAsync(info.LoginProvider, info.ProviderKey);
+        var response = CreateUserExternalAsync(userApp,userApp.Email,info);
+        return await response;
+    }
+
+    public Task<Response<TokenDto>> FacebookLoginAsync(string idToken, int accessToken)
+    {
+        throw new NotImplementedException();
+    }
+    public async Task<Response<TokenDto>> CreateUserExternalAsync(UserApp userApp, string email, UserLoginInfo info)
+    {
+        bool result = userApp != null;
+
+        if (userApp == null)
+        {
+            userApp = await _userManager.FindByEmailAsync(email);
+            if (userApp == null)
+            {
+                userApp = new UserApp()
+                {
+                    Id = Guid.NewGuid().ToString(),
+                    Email = email,
+                    UserName = "",
+                };
+
+                var identityResult = await _userManager.CreateAsync(userApp);
+                result = identityResult.Succeeded;
+            }
+        }
+        if (result)
+        {
+            await _userManager.AddLoginAsync(userApp, info);
+            var tokenDto = _tokenService.CreateToken(userApp);
+
+            return Response<TokenDto>.Success(tokenDto,StatusCodes.Status200OK);
+        }
+
+        return Response<TokenDto>.Fail("Fail!!", StatusCodes.Status400BadRequest, false);
     }
 }
