@@ -34,6 +34,10 @@ builder.Configuration.AddJsonFile($"appsettings.{enviromentName}.json", optional
 //    .AddJsonFile("appsettings.Production.json", optional: true)
 //    .AddJsonFile("appsettings.Staging.json", optional: true);
 
+builder.Services.AddCors(options => options.AddDefaultPolicy(policy =>
+    policy.WithOrigins("http://localhost:3000", "https://localhost:3000").AllowAnyHeader().AllowAnyMethod().AllowCredentials()
+));
+
 
 builder.Services.Configure<CustomTokenOption>(builder.Configuration.GetSection("TokenOptions"));
 builder.Services.Configure<List<Client>>(builder.Configuration.GetSection("Clients"));
